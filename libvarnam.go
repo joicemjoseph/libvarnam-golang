@@ -63,4 +63,11 @@ func Init(langCode string) (*Varnam, *VarnamError) {
 	}
 	return &Varnam{handle: v}, nil
 }
+
+func (v *Varnam) Learn(text string) *VarnamError {
+	rc := C.varnam_learn(v.handle, C.CString(text))
+	if rc != 0 {
+		return &VarnamError{errorCode: (int)(rc), message: "Learning Failed: " + errorCodes[(int)(rc)]}
+	}
+	return nil
 }
