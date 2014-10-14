@@ -5,7 +5,7 @@ package libvarnam
 // #include <varnam.h>
 import "C"
 
-var errorCodes = map[int]string{
+var errorMessagesMap = map[int]string{
 	1: "VARNAM MISUSE",
 	2: "VARNAM ERROR",
 	3: "VARNAM ARGUMENTS ERROR",
@@ -34,7 +34,8 @@ func (v *Varnam) Transliterate(text string) ([]string, *VarnamError) {
 	var va *C.varray
 	rc := C.varnam_transliterate(v.handle, C.CString(text), &va)
 	if rc != 0 {
-		return []string{}, &VarnamError{errorCode: (int)(rc), message: "Transliteration Failed: " + errorCodes[(int)(rc)]}
+		errorCode := (int)(rc)
+		return []string{}, &VarnamError{errorCode: errorCode, message: v.getVarnamError(errorCode)}
 	}
 	var i C.int
 	var array []string
@@ -49,7 +50,8 @@ func (v *Varnam) ReverseTransliterate(text string) (string, *VarnamError) {
 	var output *C.char
 	rc := C.varnam_reverse_transliterate(v.handle, C.CString(text), &output)
 	if rc != 0 {
-		return "", &VarnamError{errorCode: (int)(rc), message: "Reverse Transliteration Failed: " + errorCodes[(int)(rc)]}
+		errorCode := (int)(rc)
+		return "", &VarnamError{errorCode: errorCode, message: v.getVarnamError(errorCode)}
 	}
 	return C.GoString(output), nil
 }
@@ -59,7 +61,7 @@ func Init(langCode string) (*Varnam, *VarnamError) {
 	var msg *C.char
 	rc := C.varnam_init_from_lang(C.CString(langCode), &v, &msg)
 	if rc != 0 {
-		return nil, &VarnamError{errorCode: (int)(rc), message: C.GoString(msg)}
+		return nil, &VarnamError{errorCode: (int)(rc), message: "Varnam Initialization Failed"}
 	}
 	return &Varnam{handle: v}, nil
 }
@@ -67,7 +69,14 @@ func Init(langCode string) (*Varnam, *VarnamError) {
 func (v *Varnam) Learn(text string) *VarnamError {
 	rc := C.varnam_learn(v.handle, C.CString(text))
 	if rc != 0 {
-		return &VarnamError{errorCode: (int)(rc), message: "Learning Failed: " + errorCodes[(int)(rc)]}
+		errorCode := (int)(rc)
+		return &VarnamError{errorCode: errorCode, message: v.getVarnamError(errorCode)}
 	}
 	return nil
+}
+
+func (v *Varnam) getVarnamError(errorCode int) string {
+	errormessage := C.varnam_get_last_error(v.handle)
+	varnamerrormessage := C.GoString(errormessage)
+	return errorMessagesMap[errorCode] + ": " + varnamerrormessage
 }
