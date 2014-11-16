@@ -4,18 +4,7 @@ package libvarnam
 // #include <stdio.h>
 // #include <varnam.h>
 import "C"
-
-var errorMessagesMap = map[int]string{
-	1: "VARNAM MISUSE",
-	2: "VARNAM ERROR",
-	3: "VARNAM ARGUMENTS ERROR",
-	4: "VARNAM MEMORY ERROR",
-	5: "VARNAM PARTIAL RENDERING",
-	6: "VARNAM STORAGE ERROR",
-	7: "VARNAM INVALID CONFIG",
-	8: "VARNAM STEMRULE HIT",
-	9: "VARNAM STEMRULE MISS",
-}
+import "fmt"
 
 type Varnam struct {
 	handle *C.varnam
@@ -30,12 +19,12 @@ func (e *VarnamError) Error() string {
 	return e.message
 }
 
-func (v *Varnam) Transliterate(text string) ([]string, *VarnamError) {
+func (v *Varnam) Transliterate(text string) ([]string, error) {
 	var va *C.varray
 	rc := C.varnam_transliterate(v.handle, C.CString(text), &va)
-	if rc != 0 {
+	if rc != C.VARNAM_SUCCESS {
 		errorCode := (int)(rc)
-		return []string{}, &VarnamError{errorCode: errorCode, message: v.getVarnamError(errorCode)}
+		return nil, &VarnamError{errorCode: errorCode, message: v.getVarnamError(errorCode)}
 	}
 	var i C.int
 	var array []string
@@ -46,27 +35,27 @@ func (v *Varnam) Transliterate(text string) ([]string, *VarnamError) {
 	return array, nil
 }
 
-func (v *Varnam) ReverseTransliterate(text string) (string, *VarnamError) {
+func (v *Varnam) ReverseTransliterate(text string) (string, error) {
 	var output *C.char
 	rc := C.varnam_reverse_transliterate(v.handle, C.CString(text), &output)
-	if rc != 0 {
+	if rc != C.VARNAM_SUCCESS {
 		errorCode := (int)(rc)
 		return "", &VarnamError{errorCode: errorCode, message: v.getVarnamError(errorCode)}
 	}
 	return C.GoString(output), nil
 }
 
-func Init(langCode string) (*Varnam, *VarnamError) {
+func Init(langCode string) (*Varnam, error) {
 	var v *C.varnam
 	var msg *C.char
 	rc := C.varnam_init_from_lang(C.CString(langCode), &v, &msg)
-	if rc != 0 {
-		return nil, &VarnamError{errorCode: (int)(rc), message: "Varnam Initialization Failed"}
+	if rc != C.VARNAM_SUCCESS {
+		return nil, &VarnamError{errorCode: (int)(rc), message: C.GoString(msg)}
 	}
 	return &Varnam{handle: v}, nil
 }
 
-func (v *Varnam) Learn(text string) *VarnamError {
+func (v *Varnam) Learn(text string) error {
 	rc := C.varnam_learn(v.handle, C.CString(text))
 	if rc != 0 {
 		errorCode := (int)(rc)
@@ -77,6 +66,6 @@ func (v *Varnam) Learn(text string) *VarnamError {
 
 func (v *Varnam) getVarnamError(errorCode int) string {
 	errormessage := C.varnam_get_last_error(v.handle)
-	varnamerrormessage := C.GoString(errormessage)
-	return errorMessagesMap[errorCode] + ": " + varnamerrormessage
+	varnamErrorMsg := C.GoString(errormessage)
+	return fmt.Sprintf("%d:%s", errorCode, varnamErrorMsg)
 }
