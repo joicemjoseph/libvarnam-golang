@@ -1,7 +1,7 @@
 Golang bindings for libvarnam
 ================
 
-```golang
+```go
 package main
 
 import "fmt"
