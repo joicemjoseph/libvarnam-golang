@@ -69,3 +69,7 @@ func (v *Varnam) getVarnamError(errorCode int) string {
 	varnamErrorMsg := C.GoString(errormessage)
 	return fmt.Sprintf("%d:%s", errorCode, varnamErrorMsg)
 }
+
+func (v *Varnam) Destroy() {
+	C.varnam_destroy(v.handle)
+}

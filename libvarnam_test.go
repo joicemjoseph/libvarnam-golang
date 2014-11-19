@@ -54,3 +54,8 @@ func TestLearnFailure(t *testing.T) {
 		t.Errorf("Expected learn to fail, but didn't fail")
 	}
 }
+
+func TestDestroy(t *testing.T) {
+	varnam := initVarnam("hi", t)
+	varnam.Destroy()
+}
