@@ -15,6 +15,15 @@ type VarnamError struct {
 	message   string
 }
 
+type SchemeDetails struct {
+	langCode     string
+	identifier   string
+	displayName  string
+	author       string
+	compiledDate string
+	isStable     bool
+}
+
 func (e *VarnamError) Error() string {
 	return e.message
 }
@@ -53,6 +62,27 @@ func Init(langCode string) (*Varnam, error) {
 		return nil, &VarnamError{errorCode: (int)(rc), message: C.GoString(msg)}
 	}
 	return &Varnam{handle: v}, nil
+}
+
+func GetAllSchemeDetails() []*SchemeDetails {
+	allSchemeDetails := C.varnam_get_all_scheme_details()
+	if allSchemeDetails == nil {
+		return []*SchemeDetails{}
+	}
+
+	var schemeDetails []*SchemeDetails
+	length := int(C.varray_length(allSchemeDetails))
+	for i := 0; i < length; i++ {
+		detail := (*C.vscheme_details)(C.varray_get(allSchemeDetails, C.int(i)))
+		schemeDetails = append(schemeDetails, &SchemeDetails{
+			langCode: C.GoString(detail.langCode), identifier: C.GoString(detail.identifier),
+			displayName: C.GoString(detail.displayName), author: C.GoString(detail.author),
+			compiledDate: C.GoString(detail.compiledDate), isStable: detail.isStable > 0})
+
+		C.varnam_destroy_scheme_details(detail)
+	}
+	C.varray_free(allSchemeDetails, nil)
+	return schemeDetails
 }
 
 func (v *Varnam) Learn(text string) error {

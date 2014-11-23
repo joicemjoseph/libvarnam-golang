@@ -55,6 +55,13 @@ func TestLearnFailure(t *testing.T) {
 	}
 }
 
+func TestGetAllSchemeDetails(t *testing.T) {
+	scheme_details := GetAllSchemeDetails()
+	if len(scheme_details) == 0 {
+		t.Errorf("Expected GetAllSchemeDetails to return atlest one scheme details. But returned none")
+	}
+}
+
 func TestDestroy(t *testing.T) {
 	varnam := initVarnam("hi", t)
 	varnam.Destroy()
