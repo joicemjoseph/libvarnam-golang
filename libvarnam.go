@@ -16,12 +16,12 @@ type VarnamError struct {
 }
 
 type SchemeDetails struct {
-	langCode     string
-	identifier   string
-	displayName  string
-	author       string
-	compiledDate string
-	isStable     bool
+	LangCode     string
+	Identifier   string
+	DisplayName  string
+	Author       string
+	CompiledDate string
+	IsStable     bool
 }
 
 func (e *VarnamError) Error() string {
@@ -75,9 +75,9 @@ func GetAllSchemeDetails() []*SchemeDetails {
 	for i := 0; i < length; i++ {
 		detail := (*C.vscheme_details)(C.varray_get(allSchemeDetails, C.int(i)))
 		schemeDetails = append(schemeDetails, &SchemeDetails{
-			langCode: C.GoString(detail.langCode), identifier: C.GoString(detail.identifier),
-			displayName: C.GoString(detail.displayName), author: C.GoString(detail.author),
-			compiledDate: C.GoString(detail.compiledDate), isStable: detail.isStable > 0})
+			LangCode: C.GoString(detail.langCode), Identifier: C.GoString(detail.identifier),
+			DisplayName: C.GoString(detail.displayName), Author: C.GoString(detail.author),
+			CompiledDate: C.GoString(detail.compiledDate), IsStable: detail.isStable > 0})
 
 		C.varnam_destroy_scheme_details(detail)
 	}
