@@ -1,7 +1,6 @@
 package libvarnam
 
-// #cgo pkg-config: varnam
-// #include <stdio.h>
+// #cgo pkg-config: varnamstatic
 // #include <varnam.h>
 import "C"
 import "fmt"
