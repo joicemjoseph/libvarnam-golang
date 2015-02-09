@@ -53,10 +53,10 @@ func (v *Varnam) ReverseTransliterate(text string) (string, error) {
 	return C.GoString(output), nil
 }
 
-func Init(langCode string) (*Varnam, error) {
+func Init(schemeIdentifier string) (*Varnam, error) {
 	var v *C.varnam
 	var msg *C.char
-	rc := C.varnam_init_from_lang(C.CString(langCode), &v, &msg)
+	rc := C.varnam_init_from_id(C.CString(schemeIdentifier), &v, &msg)
 	if rc != C.VARNAM_SUCCESS {
 		return nil, &VarnamError{errorCode: (int)(rc), message: C.GoString(msg)}
 	}

@@ -4,8 +4,8 @@ import (
 	"testing"
 )
 
-func initVarnam(langCode string, t *testing.T) *Varnam {
-	varnam, err := Init(langCode)
+func initVarnam(schemeId string, t *testing.T) *Varnam {
+	varnam, err := Init(schemeId)
 	if err != nil {
 		t.Errorf("Expected init to run, but failing with: %s", err.Error())
 	}
@@ -16,7 +16,7 @@ func TestInit(t *testing.T) {
 	initVarnam("ml", t)
 }
 
-func TestInitWithIncorrectLangCode(t *testing.T) {
+func TestInitWithIncorrectIdentifierCode(t *testing.T) {
 	_, err := Init("ml-nonexisting")
 	if err == nil {
 		t.Error("Expected init to fail when lang code is incorrect")
