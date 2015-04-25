@@ -64,23 +64,29 @@ func Init(schemeIdentifier string) (*Varnam, error) {
 }
 
 func GetAllSchemeDetails() []*SchemeDetails {
-	allSchemeDetails := C.varnam_get_all_scheme_details()
-	if allSchemeDetails == nil {
+	allHandles := C.varnam_get_all_handles()
+	if allHandles == nil {
 		return []*SchemeDetails{}
 	}
 
 	var schemeDetails []*SchemeDetails
-	length := int(C.varray_length(allSchemeDetails))
+	length := int(C.varray_length(allHandles))
 	for i := 0; i < length; i++ {
-		detail := (*C.vscheme_details)(C.varray_get(allSchemeDetails, C.int(i)))
+		handle := (*C.varnam)(C.varray_get(allHandles, C.int(i)))
+		var detail *C.vscheme_details
+		rc := C.varnam_get_scheme_details(handle, &detail)
+		if rc != C.VARNAM_SUCCESS {
+			return []*SchemeDetails{}
+		}
+
 		schemeDetails = append(schemeDetails, &SchemeDetails{
 			LangCode: C.GoString(detail.langCode), Identifier: C.GoString(detail.identifier),
 			DisplayName: C.GoString(detail.displayName), Author: C.GoString(detail.author),
 			CompiledDate: C.GoString(detail.compiledDate), IsStable: detail.isStable > 0})
 
-		C.varnam_destroy_scheme_details(detail)
+		C.varnam_destroy(handle)
 	}
-	C.varray_free(allSchemeDetails, nil)
+
 	return schemeDetails
 }
 
