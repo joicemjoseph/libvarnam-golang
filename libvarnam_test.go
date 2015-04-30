@@ -1,6 +1,7 @@
 package libvarnam
 
 import (
+	"os"
 	"testing"
 )
 
@@ -24,6 +25,22 @@ func TestInitWithIncorrectIdentifierCode(t *testing.T) {
 	expectedErrorMessage := "Failed to find symbols file for: ml-nonexisting"
 	if err.Error() != expectedErrorMessage {
 		t.Errorf("Expected error message to be: %s, but was: %s", expectedErrorMessage, err.Error())
+	}
+}
+
+func TestGetSuggestionsFilePath(t *testing.T) {
+	varnam := initVarnam("ml", t)
+	suggestionsFilePath := varnam.GetSuggestionsFilePath()
+	if _, err := os.Stat(suggestionsFilePath); os.IsNotExist(err) {
+		t.Errorf("%s: Suggestions file does not exists", suggestionsFilePath)
+	}
+}
+
+func TestGetCorpusDetails(t *testing.T) {
+	varnam := initVarnam("hi", t)
+	_, err := varnam.GetCorpusDetails()
+	if err != nil {
+		t.Errorf("Failed to get corpus details. Got error: %s", err.Error())
 	}
 }
 

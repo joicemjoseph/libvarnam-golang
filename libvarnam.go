@@ -23,8 +23,27 @@ type SchemeDetails struct {
 	IsStable     bool
 }
 
+type CorpusDetails struct {
+	WordsCount int
+}
+
 func (e *VarnamError) Error() string {
 	return e.message
+}
+
+func (v *Varnam) GetSuggestionsFilePath() string {
+	return C.GoString(C.varnam_get_suggestions_file(v.handle))
+}
+
+func (v *Varnam) GetCorpusDetails() (*CorpusDetails, error) {
+	var details *C.vcorpus_details
+	rc := C.varnam_get_corpus_details(v.handle, &details)
+	if rc != C.VARNAM_SUCCESS {
+		errorCode := (int)(rc)
+		return nil, &VarnamError{errorCode: errorCode, message: v.getVarnamError(errorCode)}
+	}
+
+	return &CorpusDetails{WordsCount: int(details.wordsCount)}, nil
 }
 
 func (v *Varnam) Transliterate(text string) ([]string, error) {
