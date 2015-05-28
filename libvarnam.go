@@ -72,6 +72,22 @@ func (v *Varnam) ReverseTransliterate(text string) (string, error) {
 	return C.GoString(output), nil
 }
 
+type LearnStatus struct {
+	TotalWords int
+	Failed     int
+}
+
+func (v *Varnam) LearnFromFile(filePath string) (*LearnStatus, error) {
+	var status C.vlearn_status
+	rc := C.varnam_learn_from_file(v.handle, C.CString(filePath), &status, nil, nil)
+	if rc != C.VARNAM_SUCCESS {
+		errorCode := (int)(rc)
+		return nil, &VarnamError{errorCode: errorCode, message: v.getVarnamError(errorCode)}
+	}
+
+	return &LearnStatus{TotalWords: int(status.total_words), Failed: int(status.failed)}, nil
+}
+
 func Init(schemeIdentifier string) (*Varnam, error) {
 	var v *C.varnam
 	var msg *C.char
