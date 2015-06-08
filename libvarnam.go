@@ -24,7 +24,7 @@ type SchemeDetails struct {
 }
 
 type CorpusDetails struct {
-	WordsCount int
+	WordsCount int `json:"wordsCount"`
 }
 
 func (e *VarnamError) Error() string {
