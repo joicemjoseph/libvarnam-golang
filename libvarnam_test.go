@@ -3,83 +3,69 @@ package libvarnam
 import (
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-func initVarnam(schemeId string, t *testing.T) *Varnam {
-	varnam, err := Init(schemeId)
+func initVarnam(schemeID string) *Varnam {
+	varnam, err := Init(schemeID)
 	if err != nil {
-		t.Errorf("Expected init to run, but failing with: %s", err.Error())
+		return nil
 	}
+
 	return varnam
 }
 
 func TestInit(t *testing.T) {
-	initVarnam("ml", t)
+	require.NotNil(t, initVarnam("ml"))
 }
 
 func TestInitWithIncorrectIdentifierCode(t *testing.T) {
 	_, err := Init("ml-nonexisting")
-	if err == nil {
-		t.Error("Expected init to fail when lang code is incorrect")
-	}
+	require.NoErrorf(t, err, "Expected init to fail when lang code is incorrect")
+
 	expectedErrorMessage := "Failed to find symbols file for: ml-nonexisting"
-	if err.Error() != expectedErrorMessage {
-		t.Errorf("Expected error message to be: %s, but was: %s", expectedErrorMessage, err.Error())
-	}
+	require.EqualErrorf(t, err, expectedErrorMessage, "Expected error message to be: %s, but was: %s", expectedErrorMessage, err.Error())
 }
 
 func TestGetSuggestionsFilePath(t *testing.T) {
-	varnam := initVarnam("ml", t)
+	varnam := initVarnam("ml")
 	suggestionsFilePath := varnam.GetSuggestionsFilePath()
-	if _, err := os.Stat(suggestionsFilePath); os.IsNotExist(err) {
-		t.Errorf("%s: Suggestions file does not exists", suggestionsFilePath)
-	}
+	_, err := os.Stat(suggestionsFilePath)
+	require.Truef(t, os.IsNotExist(err), "%s: Suggestions file does not exists", suggestionsFilePath)
 }
 
 func TestGetCorpusDetails(t *testing.T) {
-	varnam := initVarnam("hi", t)
+	varnam := initVarnam("hi")
 	_, err := varnam.GetCorpusDetails()
-	if err != nil {
-		t.Errorf("Failed to get corpus details. Got error: %s", err.Error())
-	}
+	require.NoErrorf(t, err, "Failed to get corpus details. Got error: %s", err.Error())
 }
 
 func TestTransliterate(t *testing.T) {
-	varnam := initVarnam("ml", t)
+	varnam := initVarnam("ml")
 	words, err := varnam.Transliterate("navaneeth")
-	if err != nil {
-		t.Errorf("Failed to perform transliteration. Got: %s", err.Error())
-	}
-
-	if len(words) == 0 {
-		t.Errorf("Failed to perform transliteration. Got 0 words")
-	}
+	require.NoErrorf(t, err, "Failed to perform transliteration. Got: %s", err.Error())
+	require.NotEmptyf(t, words, "Failed to perform transliteration. Got 0 words")
 }
 
 func TestLearn(t *testing.T) {
-	varnam := initVarnam("hi", t)
+	varnam := initVarnam("hi")
 	err := varnam.Learn("भारत")
-	if err != nil {
-		t.Errorf("Failed to perform learn. Got error: %s", err.Error())
-	}
+	require.NoErrorf(t, err, "Failed to perform learn. Got error: %s", err.Error())
 }
 
 func TestLearnFailure(t *testing.T) {
-	varnam := initVarnam("hi", t)
+	varnam := initVarnam("hi")
 	err := varnam.Learn("foo")
-	if err == nil {
-		t.Errorf("Expected learn to fail, but didn't fail")
-	}
+	require.NoError(t, err, "Expected learn to fail, but didn't fail")
 }
 
 func TestGetAllSchemeDetails(t *testing.T) {
-	scheme_details := GetAllSchemeDetails()
-	if len(scheme_details) == 0 {
-		t.Errorf("Expected GetAllSchemeDetails to return atlest one scheme details. But returned none")
-	}
+	schemeDetails := GetAllSchemeDetails()
+	require.NotEmptyf(t, schemeDetails, "Expected GetAllSchemeDetails to return atlest one scheme details. But returned none")
 }
 
 func TestDestroy(t *testing.T) {
-	varnam := initVarnam("hi", t)
+	varnam := initVarnam("hi")
 	varnam.Destroy()
 }
