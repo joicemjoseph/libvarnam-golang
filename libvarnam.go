@@ -46,6 +46,11 @@ func (v *Varnam) GetSuggestionsFilePath() string {
 	return C.GoString(C.varnam_get_suggestions_file(v.handle))
 }
 
+// GetSchemeFilePath returns the scheme file (.vst)
+func (v *Varnam) GetSchemeFilePath() string {
+	return C.GoString(C.varnam_get_scheme_file(v.handle))
+}
+
 // GetCorpusDetails will return corpus details.
 func (v *Varnam) GetCorpusDetails() (*CorpusDetails, error) {
 	var details *C.vcorpus_details
@@ -175,6 +180,19 @@ func (v *Varnam) Learn(text string) error {
 	return nil
 }
 
+// DeleteWord from learning.
+func (v *Varnam) DeleteWord(text string) error {
+	rc := C.varnam_delete_word(v.handle, C.CString(text))
+
+	if rc != 0 {
+		errorCode := (int)(rc)
+
+		return &VarnamError{errorCode: errorCode, message: v.getVarnamError(errorCode)}
+	}
+
+	return nil
+}
+
 func (v *Varnam) getVarnamError(errorCode int) string {
 	errormessage := C.varnam_get_last_error(v.handle)
 	varnamErrorMsg := C.GoString(errormessage)
@@ -187,7 +205,7 @@ func (v *Varnam) Destroy() {
 	C.varnam_destroy(v.handle)
 }
 
-// Train methods adds a word with pattern, eg: pattern=firefox, word=ഫയർഫോക്സ്
+// Train methods trains with the word and pattern,eg: pattern=chrome,word=ക്രോം
 func (v *Varnam) Train(pattern, word string) error {
 	rc := C.varnam_train(v.handle, C.CString(pattern), C.CString(word))
 
